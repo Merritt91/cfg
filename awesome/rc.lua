@@ -20,7 +20,7 @@ beautiful.init(theme_path)
 terminal = "x-terminal-emulator"
 editor = os.getenv("EDITOR") or "editor"
 editor_cmd = terminal .. " -e " .. editor
--- Variables definition
+--> Variables definition
 hostname = io.popen("uname -n"):read()
 wifi_interface = "wlan0"
 
@@ -35,16 +35,16 @@ modkey = "Mod4"
 layouts =
 {
     "tile",
-    "tileleft",
-    "tilebottom",
-    "tiletop",
-    "fairh",
-    "fairv",
-    "magnifier",
+--    "tileleft",
+--    "tilebottom",
+--    "tiletop",
+--    "fairh",
+--    "fairv",
+--    "magnifier",
     "max",
-    "fullscreen",
-    "spiral",
-    "dwindle",
+--    "fullscreen",
+--    "spiral",
+--    "dwindle",
     "floating"
 }
 
@@ -58,6 +58,7 @@ floatapps =
     ["MPlayer"] = true,
     ["pinentry"] = true,
     ["gimp"] = true,
+    ["Skype"] = true,
     -- by instance
     ["mocp"] = true
 }
@@ -66,7 +67,7 @@ floatapps =
 -- Use the screen and tags indices.
 apptags =
 {
-    -- ["Firefox"] = { screen = 1, tag = 2 },
+    ["Iceweasel"] = { screen = 1, tag = 3 },
     -- ["mocp"] = { screen = 2, tag = 4 },
 }
 
@@ -91,19 +92,14 @@ for s = 1, screen.count() do
 end
 -- }}}
 
+
 -- {{{ Wibox
 -- Create a textbox widget
-mytextbox = widget({ type = "textbox", align = "right" })
+-- mytextbox = widget({ type = "textbox", align = "right" })
 -- Set the default text in textbox
-mytextbox.text = "<b><small> " .. AWESOME_RELEASE .. " </small></b>"
+--mytextbox.text = "<b><small> " .. AWESOME_RELEASE .. " </small></b>"
 
-
-
-
-
-
-
-
+--<--start of custom definitions
 -- Widget Colours
 widget_bg = beautiful.bg_focus
 widget_fg = beautiful.fg_normal
@@ -119,45 +115,6 @@ spacer_widget = widget({
 })
 
 spacer_widget.text = spacer
-
--- Music player
-function np_feed_widget ()
-   local np_file = io.popen('mpc 2> /dev/null')
-   local track = np_file:read("*line")
-
-   if track == nil or track:find("volume:") then
-	  np_widget.visible = false
-	  np_icon.visible = false
-   else
-	  np_widget.visible = true
-	  np_icon.visible = true
-
-      track = track:gsub('&', '&amp;')
-
-      local status = np_file:read("*line")
-      
-      if status:find("playing") then
-         np_icon.image = image(os.getenv("HOME") .. "/.config/awesome/icons/play.png")
-      else
-         np_icon.image = image(os.getenv("HOME") .. "/.config/awesome/icons/pause.png")
-      end
-
-      local dur_pattern = "%d+:%d+/%d+:%d+"
-      local duration = string.find(status, dur_pattern) and string.sub(status, string.find(status, dur_pattern)) or ""
-
-      np_widget.text = "<span color='" .. widget_fg_end .. "'>" .. track .. " (" .. duration .. ")</span> " .. spacer
-   end
-
-   np_file:close()
-end
-
-np_icon = widget({ type = "imagebox", name = "np_icon", align = "right" })
-np_icon:buttons({button({ }, 1, function () awful.spawn(music_toggle); np_feed_widget () end)})
-np_widget = widget({
-   type = "textbox",
-   name = "np_widget",
-   align = "right"
-})
 
 -- Date
 date_widget = widget({
@@ -202,29 +159,6 @@ cpugraph_widget:plot_properties_set("cpu", {
 })
 
 wicked.register(cpugraph_widget, "cpu", "$1", 3, "cpu")
-
--- Volume
-volume_widget = widget({
-    type = "textbox",
-    name = "volume_widget",
-    align = "right"
-})
-
-wicked.register(volume_widget, "function", function (widgets, args)
-    local cmd = "amixer get Master | grep Mono:"
-    local f = io.popen(cmd);
-    local l = f:read();
-    f:close();
-
-    local t
-
-    if string.find(l, "off") then
-       return "mute "
-    else
-       local pattern = "%d+%d%%"
-       return "vol: " .. string.sub(l, string.find(l, pattern)) .. " "
-    end
-end, 1);
 
 -- Wifi
 wifi_widget_text = widget({
@@ -304,20 +238,11 @@ wicked.register(battery_widget_text, 'function', function (widgets, args)
        local remaining = string.sub(l, string.find(l, "%d*%d*:*%d*%d*:%d%d"))
        text = remaining .. " (" .. perc .. ") " .. spacer
     else
-	   battery_widget_text = ""
+	   battery_widget_text = " "
     end
 
     return text 
 end, 10)
-
--- Memory
-membar_widget = widget({
-    type = "textbox",
-    name = "membar_widget",
-    align = "right"
-})
-
-wicked.register(membar_widget, "mem", " $1% ", 3)
 
 -- Temp
 temp_widget = widget({
@@ -331,18 +256,9 @@ wicked.register(temp_widget, 'function', function (widget, args)
     local f = io.popen(cmd)
     local l = f:read()
     f:close()
-    return l..'°'
+    return ' '..spacer..l..'°'
 end, 3)
-
-
-
-
-
-
-
-
-
-
+--->end of custom definintions
 
 -- Create a laucher widget and a main menu
 myawesomemenu = {
@@ -405,29 +321,19 @@ for s = 1, screen.count() do
     mywibox[s].widgets = { mylauncher,
                            mytaglist[s],
                            mytasklist[s],
-                           mypromptbox[s],
+			   mypromptbox[s],
 
-
-       wifi_widget_text,
-       wifi_widget,
-	   wifi_spacer,
-       
-       battery_widget_text,
-       
-       volume_widget,
-       spacer_widget,
-       
-       cpufreq_widget,
-       cpugraph_widget,
-       membar_widget,
-       temp_widget,
-       spacer_widget,
-       
-       date_widget,
-
-
-                           mytextbox,
-                           mylayoutbox[s],
+			   wifi_widget_text,
+			   wifi_widget,
+			   wifi_spacer,
+			   battery_widget_text,
+			   cpufreq_widget,
+			   cpugraph_widget,
+			   temp_widget,
+			   spacer_widget,
+			   date_widget,
+                           --mytextbox,
+                           --mylayoutbox[s],
                            s == 1 and mysystray or nil }
     mywibox[s].screen = s
 end
